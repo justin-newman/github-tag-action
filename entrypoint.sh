@@ -93,17 +93,18 @@ then
 fi
 
 case "$log" in
-    *#major* ) new=$(semver -i major $tag); part="major";;
-    *#minor* ) new=$(semver -i minor $tag); part="minor";;
-    *#patch* ) new=$(semver -i patch $tag); part="patch";;
+    *#major* ) new=$prefix$(semver -i major $version); part="major";;
+    *#minor* ) new=$prefix$(semver -i minor $version); part="minor";;
+    *#patch* ) new=$prefix$(semver -i patch $version); part="patch";;
     *#none* ) 
         echo "Default bump was set to none. Skipping."; echo ::set-output name=tag::$tag; echo ::set-output name=version::$version; exit 0;;
     * ) 
         if [ "$default_semvar_bump" == "none" ]; then
             echo "Default bump was set to none. Skipping."; echo ::set-output name=tag::$tag; echo ::set-output name=version::$version; exit 0
         else 
-            new=$(semver -i "${default_semvar_bump}" "${tag}"); part=$default_semvar_bump 
-        fi 
+            new=$prefix$(semver -i "${default_semvar_bump}" "${version}"); part=$default_semvar_bump 
+            new_version=${new#"$prefix"}
+        fi
         ;;
 esac
 
@@ -111,21 +112,15 @@ if $pre_release
 then
     # Already a prerelease available, bump it
     if [[ "$tag" == *"$new"* ]]; then
-        new=$(semver -i prerelease "${tag}" --preid "${suffix}"); part="pre-$part"
+        new=$prefix$(semver -i prerelease "${version}" --preid "${suffix}"); part="pre-$part"
     else
         new="$new-$suffix.0"; part="pre-$part"
     fi
+    new_version=${new#"$prefix"}
 fi
 
 echo $new
 echo $part
-
-# prefix with 'v'
-if [ -n "$prefix" ]
-then
-	new="$prefix$new"
-    new_version=${new#"$prefix"}
-fi
 
 if [ -n $custom_tag ]
 then
@@ -133,12 +128,7 @@ then
     new_version=${new#"$prefix"}
 fi
 
-if $pre_release
-then
-    echo -e "Bumping tag ${pre_tag} \n\tNew tag ${new} \n\tNew version ${version}"
-else
-    echo -e "Bumping tag ${tag} \n\tNew tag ${new} \n\tNew version ${version}"
-fi
+echo -e "Bumping tag ${tag} - Version ${version} \n\tNew tag ${new} \n\tNew version ${new_version}"
 
 # set outputs
 echo ::set-output name=new_tag::$new
