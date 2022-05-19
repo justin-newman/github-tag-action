@@ -134,13 +134,13 @@ fi
 echo $part
 
 # prefix with 'v'
-if [ -z "$prefix" ]
+if [ -n "$prefix" ]
 then
 	new="$prefix$new"
     new_version=${new#"$prefix"}
 fi
 
-if [ ! -z $custom_tag ]
+if [ -n $custom_tag ]
 then
     new="$custom_tag"
     new_version=${new#"$prefix"}
