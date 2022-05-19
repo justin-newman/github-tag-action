@@ -46,8 +46,7 @@ echo "pre_release = $pre_release"
 # fetch tags
 git fetch --tags
     
-tagFmt="^($prefix)?[0-9]+\.[0-9]+\.[0-9]+$" 
-preTagFmt="^($prefix)?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)?$"
+tagFmt="^($prefix)?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)?$"
 
 # get latest tag that looks like a semver (with or without v)
 case "$tag_context" in
@@ -55,34 +54,21 @@ case "$tag_context" in
         taglist="$(git for-each-ref --sort=-v:refname --format '%(refname:lstrip=2)' | grep -E "$tagFmt")"
         tag="$(echo "$taglist" | tail -n 1)"
         version=${tag#"$prefix"}
-
-        pre_taglist="$(git for-each-ref --sort=-v:refname --format '%(refname:lstrip=2)' | grep -E "$preTagFmt")"
-        pre_tag="$(echo "$pre_taglist" | tail -n 1)"
-        version=${pre_tag#"$prefix"}
         ;;
     *branch*) 
         taglist="$(git tag --list --merged HEAD --sort=-v:refname | grep -E "$tagFmt")"
         tag="$(echo "$taglist" | tail -n 1)"
         version=${tag#"$prefix"}
-
-        pre_taglist="$(git tag --list --merged HEAD --sort=-v:refname | grep -E "$preTagFmt")"
-        pre_tag="$(echo "$pre_taglist" | tail -n 1)"
-        version=${pre_tag#"$prefix"}
         ;;
     * ) echo "Unrecognized context"; exit 1;;
 esac
 
 # if there are none, start tags at INITIAL_VERSION which defaults to ($prefix0.0.0)
-if [ -z "$tag" ] && [ -z "$pre_tag" ]
+if [ -z "$tag" ]
 then
     log=$(git log --pretty='%B')
     tag="$prefix$initial_version"
     version=${tag#"$prefix"}
-    if [ -z "$pre_tag" ] && $pre_release
-    then
-      pre_tag="$prefix$initial_version"
-      version=${pre_tag#"$prefix"}
-    fi
 else
     log=$(git log "$tag"..HEAD --pretty='%B')
 fi
@@ -116,7 +102,7 @@ case "$log" in
         if [ "$default_semvar_bump" == "none" ]; then
             echo "Default bump was set to none. Skipping."; echo ::set-output name=tag::$tag; echo ::set-output name=version::$version; exit 0
         else 
-            new=$(semver -i "${default_semvar_bump}" $tag); part=$default_semvar_bump 
+            new=$(semver -i "${default_semvar_bump}" "${tag}"); part=$default_semvar_bump 
         fi 
         ;;
 esac
@@ -124,13 +110,14 @@ esac
 if $pre_release
 then
     # Already a prerelease available, bump it
-    if [[ "$pre_tag" == *"$new"* ]]; then
-        new=$(semver -i prerelease $pre_tag --preid $suffix); part="pre-$part"
+    if [[ "$tag" == *"$new"* ]]; then
+        new=$(semver -i prerelease "${tag}" --preid "${suffix}"); part="pre-$part"
     else
         new="$new-$suffix.0"; part="pre-$part"
     fi
 fi
 
+echo $new
 echo $part
 
 # prefix with 'v'
