@@ -72,8 +72,8 @@ case "$tag_context" in
     * ) echo "Unrecognized context"; exit 1;;
 esac
 
-# if there are none, start tags at INITIAL_VERSION which defaults to ($prefix-0.0.0)
-if [ -z "$tag" ]
+# if there are none, start tags at INITIAL_VERSION which defaults to ($prefix0.0.0)
+if [ -z "$tag" ] &&| [ -z "$pre_tag" ]
 then
     log=$(git log --pretty='%B')
     tag="$prefix$initial_version"
@@ -84,11 +84,11 @@ then
       version=${pre_tag#"$prefix"}
     fi
 else
-    log=$(git log $tag..HEAD --pretty='%B')
+    log=$(git log "$tag"..HEAD --pretty='%B')
 fi
 
 # get current commit hash for tag
-tag_commit=$(git rev-list -n 1 $tag)
+tag_commit=$(git rev-list -n 1 "$tag")
 
 # get current commit hash
 commit=$(git rev-parse HEAD)
