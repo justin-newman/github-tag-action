@@ -53,20 +53,20 @@ preTagFmt="^($prefix)?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)?$"
 case "$tag_context" in
     *repo*) 
         taglist="$(git for-each-ref --sort=-v:refname --format '%(refname:lstrip=2)' | grep -E "$tagFmt")"
-        tag="$(semver "$taglist" | tail -n 1)"
+        tag="$(echo "$taglist" | tail -n 1)"
         version=${tag#"$prefix"}
 
         pre_taglist="$(git for-each-ref --sort=-v:refname --format '%(refname:lstrip=2)' | grep -E "$preTagFmt")"
-        pre_tag="$(semver "$pre_taglist" | tail -n 1)"
+        pre_tag="$(echo "$pre_taglist" | tail -n 1)"
         version=${pre_tag#"$prefix"}
         ;;
     *branch*) 
         taglist="$(git tag --list --merged HEAD --sort=-v:refname | grep -E "$tagFmt")"
-        tag="$(semver "$taglist" | tail -n 1)"
+        tag="$(echo "$taglist" | tail -n 1)"
         version=${tag#"$prefix"}
 
         pre_taglist="$(git tag --list --merged HEAD --sort=-v:refname | grep -E "$preTagFmt")"
-        pre_tag="$(semver "$pre_taglist" | tail -n 1)"
+        pre_tag="$(echo "$pre_taglist" | tail -n 1)"
         version=${pre_tag#"$prefix"}
         ;;
     * ) echo "Unrecognized context"; exit 1;;
