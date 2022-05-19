@@ -70,11 +70,11 @@ then
     tag="$prefix$initial_version"
     version=${tag#"$prefix"}
 else
-    log=$(git log "$tag"..HEAD --pretty='%B')
+    log=$(git log "${tag}"..HEAD --pretty='%B')
 fi
 
 # get current commit hash for tag
-tag_commit=$(git rev-list -n 1 "$tag")
+tag_commit=$(git rev-list -n 1 "${tag}")
 
 # get current commit hash
 commit=$(git rev-parse HEAD)
@@ -93,42 +93,40 @@ then
 fi
 
 case "$log" in
-    *#major* ) new=$prefix$(semver -i major $version); part="major";;
-    *#minor* ) new=$prefix$(semver -i minor $version); part="minor";;
-    *#patch* ) new=$prefix$(semver -i patch $version); part="patch";;
-    *#none* ) 
+    *#major* ) new=$prefix$(semver -i major $version); new_version=${new#"$prefix"}; part="major";;
+    *#minor* ) new=$prefix$(semver -i minor $version); new_version=${new#"$prefix"}; part="minor";;
+    *#patch* ) new=$prefix$(semver -i patch $version); new_version=${new#"$prefix"}; part="patch";;
+    *#none* )
         echo "Default bump was set to none. Skipping."; echo ::set-output name=tag::$tag; echo ::set-output name=version::$version; exit 0;;
-    * ) 
+    * )
         if [ "$default_semvar_bump" == "none" ]; then
             echo "Default bump was set to none. Skipping."; echo ::set-output name=tag::$tag; echo ::set-output name=version::$version; exit 0
-        else 
-            new=$prefix$(semver -i "${default_semvar_bump}" "${version}"); part=$default_semvar_bump 
-            new_version=${new#"$prefix"}
+        else
+            new=$prefix$(semver -i "${default_semvar_bump}" "${version}"); new_version=${new#"$prefix"}; part=$default_semvar_bump
         fi
         ;;
 esac
 
 if $pre_release
 then
-    # Already a prerelease available, bump it
+    # Already a prerelease available, bump it. else start at .0
     if [[ "$tag" == *"$new"* ]]; then
-        new=$prefix$(semver -i prerelease "${version}" --preid "${suffix}"); part="pre-$part"
+        new=$prefix$(semver -i prerelease "${version}" --preid "${suffix}"); new_version=${new#"$prefix"}; part="pre-$part"
     else
-        new="$new-$suffix.0"; part="pre-$part"
+        new="$new-$suffix.0"; new_version=${new#"$prefix"}; part="pre-$part"
     fi
-    new_version=${new#"$prefix"}
 fi
 
 echo $new
 echo $part
 
-if [ -n $custom_tag ]
+if [ ! -z $custom_tag ]
 then
-    new="$custom_tag"
+    new="$prefix$custom_tag"
     new_version=${new#"$prefix"}
 fi
 
-echo -e "Bumping tag ${tag} - Version ${version} \n\tNew tag ${new} \n\tNew version ${new_version}"
+echo -e "Bumping tag ${tag} - Version: ${version} \n\tNew tag: ${new} \n\tNew version: ${new_version}"
 
 # set outputs
 echo ::set-output name=new_tag::$new
