@@ -73,7 +73,7 @@ case "$tag_context" in
 esac
 
 # if there are none, start tags at INITIAL_VERSION which defaults to ($prefix0.0.0)
-if [ -z "$tag" ] &&| [ -z "$pre_tag" ]
+if [ -z "$tag" ] && [ -z "$pre_tag" ]
 then
     log=$(git log --pretty='%B')
     tag="$prefix$initial_version"
