@@ -134,7 +134,7 @@ fi
 echo $part
 
 # prefix with 'v'
-if $prefix
+if [ -z "$prefix" ]
 then
 	new="$prefix$new"
     new_version=${new#"$prefix"}
