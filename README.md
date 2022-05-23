@@ -52,7 +52,9 @@ _NOTE: set the fetch-depth for `actions/checkout@v3` to be sure you retrieve all
 #### Outputs
 
 - **new_tag** - The value of the newly created tag.
-- **tag** - The value of the latest tag after running this action.
+- **new_version** - The value of the newly created tag without the prefix.
+- **tag** - The value of the tag before running this action.
+- **version** - The value of the tag before running this action without the prefix.
 - **part** - The part of version which was bumped.
 
 > **_Note:_** This action creates a [lightweight tag](https://developer.github.com/v3/git/refs/#create-a-reference).
