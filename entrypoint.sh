@@ -129,6 +129,8 @@ fi
 echo -e "Bumping tag ${tag} - Version: ${version} \n\tNew tag: ${new} \n\tNew version: ${new_version}"
 
 # set outputs
+echo ::set-output name=tag::$tag
+echo ::set-output name=version::$version
 echo ::set-output name=new_tag::$new
 echo ::set-output name=new_version::$new_version
 echo ::set-output name=part::$part
@@ -136,13 +138,8 @@ echo ::set-output name=part::$part
 # use dry run to determine the next tag
 if $dryrun
 then
-    echo ::set-output name=tag::$tag
-    echo ::set-output name=version::$version
     exit 0
 fi 
-
-echo ::set-output name=tag::$new
-echo ::set-output name=version::$version
 
 # create local git tag
 git tag $new
